@@ -1,6 +1,8 @@
 import package as pkg
 from numpy import median
+from decimal import Decimal
 
+TWO_PLACES = Decimal("0.01")
 
 class AmazonFeesCalculator(object):
 	"""
@@ -50,9 +52,8 @@ class AmazonFeesCalculator(object):
 			:fees [Decimal]: FBA fees for the pacakge
 		"""
 		fees = self.package.pick_pack
-		print(fees)
 		fees += self.package.weight_handling
-		fees += self.package.thirty_day()
+		fees += self.package.thirtyday()
 		fees += self.package.order_handling
 		if self.package.is_apparel:
 		    fees += Decimal("0.40")

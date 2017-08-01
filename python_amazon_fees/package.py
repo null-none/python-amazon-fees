@@ -17,11 +17,12 @@
 import math
 import logging
 from numpy import median
-from abc import ABCMeta, abstractmethod, abstractproperty
+import six, abc
 from decimal import Decimal, ROUND_HALF_UP, ROUND_UP
 
 
-class Package(metaclass=ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class Package():
 
     TWO_PLACES = Decimal("0.01")
 
@@ -43,7 +44,6 @@ class Package(metaclass=ABCMeta):
         self._is_apparel = is_apparel
         self._is_pro = is_pro
 
-
     @staticmethod
     def decimal(num):
         """Tries to convert `num` to Decimal
@@ -60,10 +60,9 @@ class Package(metaclass=ABCMeta):
         except:
             raise TypeError("Please provide Decimal compatible values.")
 
-    @abstractmethod
+    @abc.abstractmethod
     def thirtyday(standard_oversize):
         pass
-
 
     @staticmethod
     def size(length, width, height, weight):
@@ -102,11 +101,10 @@ class Package(metaclass=ABCMeta):
             (min(length, width, height) * 2))
         return Decimal(girth).quantize(Decimal("0.1"))
 
-
     def dimensional_weight(self):
         dimensional_weight = (
             Decimal(self.height * self.length * self.width) / Decimal(166.0)
-            ).quantize(self.TWO_PLACES)
+        ).quantize(self.TWO_PLACES)
         return dimensional_weight
 
     @property
@@ -138,7 +136,6 @@ class Package(metaclass=ABCMeta):
         return self._is_pro
 
 
-
 class Mock(Package):
 
     def __init__(self,
@@ -150,7 +147,7 @@ class Mock(Package):
                  is_apparel=False,
                  is_pro=False):
         super(Mock, self).__init__('Mock', height, length,
-            width, weight, is_media, is_apparel, is_pro)
+                                   width, weight, is_media, is_apparel, is_pro)
 
 
 class Standard(Package):
@@ -165,18 +162,16 @@ class Standard(Package):
                  is_apparel=False,
                  is_pro=False):
         super(Standard, self).__init__(packagetype, height, length,
-            width, weight, is_media, is_apparel, is_pro)
+                                       width, weight, is_media, is_apparel, is_pro)
         self._pick_pack = Decimal("1.06")
-
 
     def thirtyday(self):
         return Decimal('0.5525') * Package.cubicfoot(self.length,
-            self.width, self.height)
+                                                     self.width, self.height)
 
     @property
     def pick_pack(self):
         return self._pick_pack
-
 
 
 class StandardNonMedia(Standard):
@@ -191,7 +186,7 @@ class StandardNonMedia(Standard):
                  is_apparel=False,
                  is_pro=False):
         super(StandardNonMedia, self).__init__(packagetype, height, length, width,
-            weight, is_media, is_apparel, is_pro)
+                                               weight, is_media, is_apparel, is_pro)
         self._order_handling = 0
         self._package_weight = Package.decimal("0.25")
 
@@ -199,8 +194,11 @@ class StandardNonMedia(Standard):
     def order_handling(self):
         return self._order_handling
 
+    @property
+    def package_weight(self):
+        return self._package_weight
 
-    @abstractproperty
+    @abc.abstractproperty
     def outbound(self):
         pass
 
@@ -216,10 +214,9 @@ class SmallStandardNonMedia(StandardNonMedia):
                  is_apparel=False,
                  is_pro=False):
         super(SmallStandardNonMedia, self).__init__('SmallStandardNonMedia', height, length,
-            width, weight, is_media, is_apparel, is_pro)
+                                                    width, weight, is_media, is_apparel, is_pro)
         self._weight_handling = Decimal("0.50")
         self._outbound = self._calculate_outbound()
-
 
     @property
     def package_type(self):
@@ -239,7 +236,6 @@ class SmallStandardNonMedia(StandardNonMedia):
         ).quantize(Decimal('0'), rounding=ROUND_UP)
 
 
-
 class LargeStandardNonMedia(StandardNonMedia):
 
     def __init__(self,
@@ -251,7 +247,7 @@ class LargeStandardNonMedia(StandardNonMedia):
                  is_apparel=False,
                  is_pro=False):
         super(LargeStandardNonMedia, self).__init__('LargeStandardNonMedia', height, length,
-            width, weight, is_media, is_apparel, is_pro)
+                                                    width, weight, is_media, is_apparel, is_pro)
         self._weight_handling = Decimal("0.96")
         self._outbound = self._calculate_outbound()
 
@@ -282,7 +278,7 @@ class XLargeStandardNonMedia(LargeStandardNonMedia):
                  is_apparel=False,
                  is_pro=False):
         super(XLargeStandardNonMedia, self).__init__('XLargeStandardNonMedia', height, length,
-            width, weight, is_media, is_apparel, is_pro)
+                                                     width, weight, is_media, is_apparel, is_pro)
         self._weight_handling = Decimal("1.95")
         self._weight_handling_multiplier = Decimal("0.39")
         self._threshold = Decimal("2")
@@ -312,10 +308,9 @@ class Media(Standard):
                  is_apparel=False,
                  is_pro=False):
         super(Media, self).__init__(packagetype, height, length,
-            width, weight, is_media, is_apparel, is_pro)
+                                    width, weight, is_media, is_apparel, is_pro)
         self._order_handling = 0
         self._package_weight = Package.decimal("0.125")
-
 
     @property
     def order_handling(self):
@@ -333,12 +328,13 @@ class SmallStandardMedia(Media):
                  is_apparel=False,
                  is_pro=False):
         super(SmallStandardMedia, self).__init__('SmallStandardMedia', height, length,
-            width, weight, is_media, is_apparel, is_pro)
+                                                 width, weight, is_media, is_apparel, is_pro)
         self._weight_handling = Decimal("0.50")
 
     @property
     def weight_handling(self):
         return self._weight_handling
+
 
 class LargeStandardMedia(Standard):
 
@@ -351,7 +347,7 @@ class LargeStandardMedia(Standard):
                  is_apparel=False,
                  is_pro=False):
         super(LargeStandardMedia, self).__init__('LargeStandardMedia', height, length,
-            width, weight, is_media, is_apparel, is_pro)
+                                                 width, weight, is_media, is_apparel, is_pro)
         self._weight_handling = Decimal("0.85")
 
     @property
@@ -370,7 +366,7 @@ class XLargeStandardMedia(Standard):
                  is_apparel=False,
                  is_pro=False):
         super(XLargeStandardMedia, self).__init__('XLargeStandardMedia', height, length,
-            width, weight, is_media, is_apparel, is_pro)
+                                                  width, weight, is_media, is_apparel, is_pro)
         self._weight_handling = Decimal("1.24")
         self._weight_handling_multiplier = Decimal("0.41"),
         self._threshold = Decimal("2")
@@ -396,13 +392,13 @@ class Oversize(Package):
                  is_apparel=False,
                  is_pro=False):
         super(Oversize, self).__init__(packagetype, height, length,
-            width, weight, is_media, is_apparel, is_pro)
+                                       width, weight, is_media, is_apparel, is_pro)
         self._order_handling = Decimal("0")
         self._package_weight = Package.decimal("1.00")
 
     def thirtyday(self):
         return Decimal('0.4325') * self.cubicfoot(self.length,
-            self.width, self.height)
+                                                  self.width, self.height)
 
     def outbound(self):
         outbound = Decimal(self.weight + self.package_weight)
@@ -416,21 +412,22 @@ class Oversize(Package):
     def package_weight(self):
         return self._package_weight
 
-    @abstractproperty
+    @abc.abstractproperty
     def pick_pack(self):
         pass
 
-    @abstractproperty
+    @abc.abstractproperty
     def weight_handling(self):
         pass
 
-    @abstractproperty
+    @abc.abstractproperty
     def weight_handling_multiplier(self):
         pass
 
-    @abstractproperty
+    @abc.abstractproperty
     def threshold(self):
         pass
+
 
 class SmallOversize(Oversize):
 
@@ -443,7 +440,7 @@ class SmallOversize(Oversize):
                  is_apparel=False,
                  is_pro=False):
         super(SmallOversize, self).__init__('SmallOversize', height, length,
-            width, weight, is_media, is_apparel, is_pro)
+                                            width, weight, is_media, is_apparel, is_pro)
         self._pick_pack = Decimal("4.09")
         self._weight_handling = Decimal("2.06")
         self._weight_handling_multiplier = Decimal("0.39")
@@ -465,6 +462,7 @@ class SmallOversize(Oversize):
     def threshold(self):
         return self._threshold
 
+
 class MediumOversize(Oversize):
 
     def __init__(self,
@@ -476,7 +474,7 @@ class MediumOversize(Oversize):
                  is_apparel=False,
                  is_pro=False):
         super(MediumOversize, self).__init__('MediumOversize', height, length,
-            width, weight, is_media, is_apparel, is_pro)
+                                             width, weight, is_media, is_apparel, is_pro)
         self._pick_pack = Decimal("5.20")
         self._weight_handling = Decimal("2.73")
         self._weight_handling_multiplier = Decimal("0.39")
@@ -498,6 +496,7 @@ class MediumOversize(Oversize):
     def threshold(self):
         return self._threshold
 
+
 class LargeOversize(Oversize):
 
     def __init__(self,
@@ -509,7 +508,7 @@ class LargeOversize(Oversize):
                  is_apparel=False,
                  is_pro=False):
         super(LargeOversize, self).__init__('LargeOversize', height, length,
-            width, weight, is_media, is_apparel, is_pro)
+                                            width, weight, is_media, is_apparel, is_pro)
         self._pick_pack = Decimal("8.40")
         self._weight_handling = Decimal("63.98")
         self._weight_handling_multiplier = Decimal("0.80")
@@ -543,7 +542,7 @@ class SpecialOversize(Oversize):
                  is_apparel=False,
                  is_pro=False):
         super(SpecialOversize, self).__init__('SpecialOversize', height, length,
-            width, weight, is_media, is_apparel, is_pro)
+                                              width, weight, is_media, is_apparel, is_pro)
         self._pick_pack = Decimal("10.53")
         self._weight_handling = Decimal("124.58")
         self._weight_handling_multiplier = Decimal("0.92")
