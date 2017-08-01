@@ -1,1 +1,4 @@
 *.pyc
+dist
+build
+amazon_fees.egg-info
